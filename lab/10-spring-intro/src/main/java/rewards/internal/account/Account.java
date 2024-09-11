@@ -20,7 +20,7 @@ import common.repository.Entity;
  * 
  * An entity. An aggregate.
  */
-public class Account extends Entity {
+public class  Account extends Entity {
 
 	private String number;
 
