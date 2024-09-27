@@ -37,13 +37,13 @@ import java.sql.*;
 
 public class JdbcRewardRepository implements RewardRepository {
 
-	private DataSource dataSource;
+	//private DataSource dataSource;
 
 	private JdbcTemplate jdbcTemplate;
 
-	public JdbcRewardRepository(DataSource dataSource) {
-		this.dataSource = dataSource;
-		jdbcTemplate = new JdbcTemplate(dataSource);
+	public JdbcRewardRepository(JdbcTemplate jdbcTemplate) {
+		//this.dataSource = dataSource;
+		this.jdbcTemplate = jdbcTemplate;
 	}
 
 	public RewardConfirmation confirmReward(AccountContribution contribution, Dining dining) {
@@ -63,14 +63,14 @@ public class JdbcRewardRepository implements RewardRepository {
 
 		nextValue = jdbcTemplate.queryForObject(sql, String.class);
 		
-		try (Connection conn = dataSource.getConnection();
-			 PreparedStatement ps = conn.prepareStatement(sql);
-			 ResultSet rs = ps.executeQuery()) {
-			rs.next();
-			nextValue = rs.getString(1);
-		} catch (SQLException e) {
-			throw new RuntimeException("SQL exception getting next confirmation number", e);
-		}
+//		try (Connection conn = dataSource.getConnection();
+//			 PreparedStatement ps = conn.prepareStatement(sql);
+//			 ResultSet rs = ps.executeQuery()) {
+//			rs.next();
+//			nextValue = rs.getString(1);
+//		} catch (SQLException e) {
+//			throw new RuntimeException("SQL exception getting next confirmation number", e);
+//		}
 		
 		return nextValue;
 	}

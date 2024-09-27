@@ -42,9 +42,9 @@ public class JdbcRestaurantRepository implements RestaurantRepository {
 	private DataSource dataSource;
 	private JdbcTemplate jdbcTemplate;
 
-	public JdbcRestaurantRepository(DataSource dataSource) {
+	public JdbcRestaurantRepository(JdbcTemplate jdbcTemplate) {
 		this.dataSource = dataSource;
-		jdbcTemplate = new JdbcTemplate(dataSource);
+		this.jdbcTemplate = jdbcTemplate;
 	}
 
 	public Restaurant findByMerchantNumber(String merchantNumber) {

@@ -35,15 +35,13 @@ public class JdbcRewardRepositoryTests {
 
 	private JdbcRewardRepository repository;
 
-	private DataSource dataSource;
-
-	private JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
 
 	@BeforeEach
 	public void setUp() throws Exception {
-		dataSource = createTestDataSource();
-		repository = new JdbcRewardRepository(dataSource);
+        DataSource dataSource = createTestDataSource();
 		jdbcTemplate = new JdbcTemplate(dataSource);
+		repository = new JdbcRewardRepository(jdbcTemplate);
 	}
 
 	@Test
