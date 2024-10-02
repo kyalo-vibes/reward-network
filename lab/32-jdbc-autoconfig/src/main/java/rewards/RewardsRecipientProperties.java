@@ -1,5 +1,7 @@
 package rewards;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
 // TODO-06 : Capture properties into a class using @ConfigurationProperties
 // - Note that application.properties file already contains the following properties
 //
@@ -19,6 +21,8 @@ package rewards;
 //   (3) Annotate this class with @Component
 // - Implement a new command line runner that displays the name of the rewards
 //   recipient when the application gets started
+@ConfigurationProperties
 public class RewardsRecipientProperties {
+
 
 }
