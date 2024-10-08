@@ -2,6 +2,7 @@ package accounts.web;
 
 import accounts.AccountManager;
 import common.money.Percentage;
+import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,7 +131,7 @@ public class AccountController {
 		// b. Use the entityWithLocation method - like we did for createAccount().
 		accountManager.addBeneficiary(accountId, beneficiaryName);
 
-		return entityWithLocation(accountId);  // Modify this to return something
+		return entityWithLocation(beneficiaryName);  // Modify this to return something
 	}
 
 	/**
@@ -142,7 +143,7 @@ public class AccountController {
 	// b. Indicate a "204 No Content" status
 	@DeleteMapping("/accounts/{accountId}/beneficiaries/{beneficiaryName}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void removeBeneficiary(long accountId, String beneficiaryName) {
+	public void removeBeneficiary(@PathVariable long accountId,@PathVariable String beneficiaryName) {
 		Account account = accountManager.getAccount(accountId);
 		if (account == null) {
 			throw new IllegalArgumentException("No such account with id " + accountId);
@@ -175,7 +176,13 @@ public class AccountController {
 	// - It should map DataIntegrityViolationException to a 409 Conflict status code.
 	// - Use the handleNotFound method above for guidance.
 	// - Consult the lab document for further instruction
-	
+	@ResponseStatus(HttpStatus.CONFLICT)
+	@ExceptionHandler({ ConstraintViolationException.class })
+	public String handleConstraintViolation(Exception ex) {
+		logger.error("Exception is: ", ex);
+		return "DataIntegrityViolationException";
+		// just return empty 409
+	}
 	/**
 	 * Finds the Account with the given id, throwing an IllegalArgumentException
 	 * if there is no such Account.

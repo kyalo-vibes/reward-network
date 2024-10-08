@@ -54,7 +54,8 @@ public class AccountClientTests {
 	@Test
 	public void createAccount() {
 		// Use a unique number to avoid conflicts
-		String number = String.format("12345%4d", random.nextInt(10000));
+		//String number = String.format("12345%4d", random.nextInt(10000));
+		String number = "123123123";
 		Account account = new Account(number, "John Doe");
 		account.addBeneficiary("Jane Doe");
 		
@@ -92,16 +93,17 @@ public class AccountClientTests {
 		// - Store the returned location URI in a variable.
 		
 		// TODO-14: Retrieve the Beneficiary you just created from the location that was returned
+		URI uri = restTemplate.postForLocation(BASE_URL + "/accounts/{accountId}/beneficiaries", "David", 1); // Modify this line to use the restTemplate
 		//Beneficiary newBeneficiary = restTemplate.postForLocation(BASE_URL + "/accounts/{accountId}/beneficiaries", Beneficiary.class, 1, "David"); // Modify this line to use the restTemplate
-		Beneficiary newBeneficiary = restTemplate.getForObject(BASE_URL + "/accounts/{accountId}/beneficiaries/{beneficiaryName}", Beneficiary.class, 1, "David"); // Modify this line to use the restTemplate
-		Beneficiary newBeneficiary2 =
+		Beneficiary newBeneficiary = restTemplate.getForObject(uri, Beneficiary.class); // Modify this line to use the restTemplate
+
 
 		assertNotNull(newBeneficiary);
 		assertEquals("David", newBeneficiary.getName());
 		
 		// TODO-15: Delete the newly created Beneficiary
 
-		//restTemplate.delete();
+		restTemplate.delete(uri);
 
 		HttpClientErrorException httpClientErrorException = assertThrows(HttpClientErrorException.class, () -> {
 			System.out.println("You SHOULD get the exception \"No such beneficiary with name 'David'\" in the server.");
@@ -110,6 +112,7 @@ public class AccountClientTests {
 			// - Run this test, then. It should pass because we expect a 404 Not Found
 			//   If not, it is likely your delete in the previous step
 			//   was not successful.
+			restTemplate.getForObject(uri, Beneficiary.class);
 
 		});
 		assertEquals(HttpStatus.NOT_FOUND, httpClientErrorException.getStatusCode());
