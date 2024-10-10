@@ -2,6 +2,7 @@ package accounts.web;
 
 import accounts.AccountManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import common.money.Percentage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -12,9 +13,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import rewards.internal.account.Account;
+import rewards.internal.account.Beneficiary;
 
 // TODO-06: Get yourself familiarized with various testing utility classes
 // - Uncomment the import statements below
+import java.util.List;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.verify;
@@ -31,7 +35,7 @@ public class AccountControllerBootTests {
 	MockMvc mockMvc;
 
 	// TODO-09: Create AccountManager mock bean using @MockBean annotation
-	@Mock
+	@MockBean
 	AccountManager accountManager;
 
 	// TODO-10: Write positive test for GET request for an account
@@ -73,6 +77,22 @@ public class AccountControllerBootTests {
 
 	}
 
+	@Test
+	public void allAccountDetails() throws Exception {
+		given(accountManager.getAllAccounts())
+				.willReturn(List.of(new Account[]{new Account("3456789012", "Kevin Kyalo"),new Account("1234567890", "John Doe")}));
+
+		mockMvc.perform(get("/accounts"))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$[0].name").value("Kevin Kyalo"))
+				.andExpect(jsonPath("$[0].number").value("3456789012"))
+				.andExpect(jsonPath("$[1].name").value("John Doe"))
+				.andExpect(jsonPath("$[1].number").value("1234567890"));
+
+		verify(accountManager).getAllAccounts();
+	}
+
     // TODO-12: Write test for `POST` request for an account
 	// - Uncomment Java code below
 	// - Write code between the "given" and "verify" statements
@@ -103,6 +123,75 @@ public class AccountControllerBootTests {
 		verify(accountManager).save(any(Account.class));
 
 	}
+
+	@Test
+	public void getBeneficiary() throws Exception {
+		Account account = new Account("1234567890", "Kevin Kyalo");
+		account.addBeneficiary("Daniel", new Percentage(0.1));
+
+		given(accountManager.getAccount(anyLong()))
+				.willReturn(account);
+
+		mockMvc.perform(get("/accounts/{accountId}/beneficiaries/{beneficiaryName}", 0L, "Daniel"))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("name").value("Daniel"))
+				.andExpect(jsonPath("allocationPercentage").value("0.1"));
+
+		verify(accountManager).getAccount(anyLong());
+	}
+
+	@Test
+	public void getBeneficiaryFail() throws Exception {
+		Account account = new Account("1234567890", "Kevin Kyalo");
+		account.addBeneficiary("Daniel", new Percentage(0.1));
+
+		given(accountManager.getAccount(anyLong()))
+				.willReturn(account);
+
+		mockMvc.perform(get("/accounts/{accountId}/beneficiaries/{beneficiaryName}", 0L, "Stephen"))
+				.andExpect(status().isNotFound());
+
+		verify(accountManager).getAccount(anyLong());
+	}
+
+	@Test
+	public void createBeneficiary() throws Exception {
+
+		mockMvc.perform(post("/accounts/{accountId}/beneficiaries", 0L)
+				.content("Daniel"))
+				.andExpect(status().isCreated())
+				.andExpect(header().string("Location", "http://localhost/accounts/0/beneficiaries/Daniel"));
+	}
+
+	@Test
+	public void removeBeneficiary() throws Exception {
+		Account account = new Account("1234567890", "Kevin Kyalo");
+		account.addBeneficiary("Daniel", new Percentage(0.1));
+
+		given(accountManager.getAccount(anyLong()))
+				.willReturn(account);
+
+		mockMvc.perform(delete("/accounts/{accountId}/beneficiaries/{beneficiaryName}", 0L, "Daniel"))
+				.andExpect(status().isNoContent());
+
+		verify(accountManager).getAccount(anyLong());
+	}
+
+	@Test
+	public void removeBeneficiaryFail() throws Exception {
+		Account account = new Account("1234567890", "Kevin Kyalo");
+		account.addBeneficiary("Daniel", new Percentage(0.1));
+
+		given(accountManager.getAccount(anyLong()))
+				.willReturn(account);
+
+		mockMvc.perform(delete("/accounts/{accountId}/beneficiaries/{beneficiaryName}", 0L, "Stephen"))
+				.andExpect(status().isNotFound());
+
+		verify(accountManager).getAccount(anyLong());
+	}
+
 
     // Utility class for converting an object into JSON string
 	protected static String asJsonString(final Object obj) {
