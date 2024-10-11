@@ -4,6 +4,8 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.core.userdetails.User;
@@ -17,6 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 // - Add @EnableMethodSecurity annotation to this class
 
 @Configuration
+@EnableMethodSecurity
 public class RestSecurityConfig {
 
 	@Bean
@@ -27,12 +30,16 @@ public class RestSecurityConfig {
                 // TODO-04: Configure authorization using requestMatchers method
                 // - Allow DELETE on the /accounts resource (or any sub-resource)
                 //   for "SUPERADMIN" role only
+						.requestMatchers(HttpMethod.DELETE, "/accounts/**").hasRole("SUPERADMIN")
                 // - Allow POST or PUT on the /accounts resource (or any sub-resource)
                 //   for "ADMIN" or "SUPERADMIN" role only
+						.requestMatchers(HttpMethod.POST,"/accounts/**").hasAnyRole("ADMIN", "SUPERADMIN")
+						.requestMatchers(HttpMethod.PUT, "/accounts/**").hasAnyRole("ADMIN", "SUPERADMIN")
                 // - Allow GET on the /accounts resource (or any sub-resource)
                 //   for all roles - "USER", "ADMIN", "SUPERADMIN"
         		// - Allow GET on the /authorities resource
                 //   for all roles - "USER", "ADMIN", "SUPERADMIN"
+						.requestMatchers(HttpMethod.GET, "/accounts/**", "/authorities").hasAnyRole("USER", "ADMIN", "SUPERADMIN")
 
                 // Deny any request that doesn't match any authorization rule
                 .anyRequest().denyAll())
@@ -57,7 +64,11 @@ public class RestSecurityConfig {
     	// - pass all users in the InMemoryUserDetailsManager constructor
 		UserDetails user = User.withUsername("user").password(passwordEncoder.encode("user")).roles("USER").build();
 
-		return new InMemoryUserDetailsManager(user /* Add new users comma-separated here */);
+		UserDetails admin = User.withUsername("admin").password(passwordEncoder.encode("admin")).roles("USER", "ADMIN").build();
+
+		UserDetails superadmin = User.withUsername("superadmin").password(passwordEncoder.encode("superadmin")).roles("USER", "ADMIN", "SUPERADMIN").build();
+
+		return new InMemoryUserDetailsManager(user, admin, superadmin /* Add new users comma-separated here */);
 	}
     
     @Bean
