@@ -2,6 +2,8 @@ package accounts.web;
 
 import accounts.AccountManager;
 import common.money.Percentage;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +43,12 @@ public class AccountController {
 	// - Create a Counter from the MeterRegistry: name the counter "account.fetch"
 	//   with a tag of "type"/"fromCode" key/value pair
 	@Autowired
-	public AccountController(AccountManager accountManager) {
+	public AccountController(AccountManager accountManager, MeterRegistry meterRegistry) {
+		/*Counter counter = Counter.builder("account.fetch")
+				.tag("type", "fromCode")
+				.description("Number of accounts fetched")
+				.register(meterRegistry);*/
+		meterRegistry.counter("account.fetch", "type", "fromCode");
 		this.accountManager = accountManager;
 	}
 
@@ -73,7 +80,7 @@ public class AccountController {
 	 */
 	@GetMapping(value = "/accounts/{id}")
 	public Account accountDetails(@PathVariable int id) {
-
+		meterRegistry.counter("account.fetch").increment();
 		return retrieveAccount(id);
 	}
 
