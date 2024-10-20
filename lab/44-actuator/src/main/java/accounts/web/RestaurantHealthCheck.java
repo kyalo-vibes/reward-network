@@ -27,7 +27,7 @@ public class RestaurantHealthCheck implements HealthIndicator {
     @Override
     public Health health() {
         if (repository.getRestaurantCount() == 0) {
-            return Health.down().withDetail("message", "No restaurants").build();
+            return Health.status("NO_RESTAURANTS").withDetail("message", "No restaurants").build();
         } else {
             return Health.up().build();
         }
